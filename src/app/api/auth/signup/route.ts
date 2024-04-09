@@ -41,7 +41,6 @@ export async function POST(request: Request) {
             password: hashedPassword,
         });
         const savedUser = await user.save();
-        console.log(savedUser);
 
         return NextResponse.json(savedUser);
     } catch (error) {

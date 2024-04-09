@@ -1,32 +1,40 @@
 "use client";
-
-import axios, {AxiosError} from "axios"
-import { FormEvent, useState } from "react"
+import axios, { AxiosError } from "axios";
+import { FormEvent, useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 function RegisterPage() {
 
   const [error, setError] = useState();
+  const router = useRouter();
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     
     try { 
-      const res = await axios.post('/api/auth/signup', {
+      const signupResponse = await axios.post('/api/auth/signup', {
         fullname: formData.get("fullname"),
         email: formData.get("email"),
-        password: formData.get("password")
-        
-      })
-      console.log(res)
+        password: formData.get("password"),
+      });
+
+      const res = await signIn("credentials", {
+         email: signupResponse.data.email,
+         password: formData.get("password"),
+         redirect: false,
+      });
+
+      if(res?.ok) return router.push("/dashboard");
+      console.log(res);
     } catch (error){
-      console.log(error)
+      console.log(error);
       if(error instanceof AxiosError){
-        setError(error.response?.data.message)
+        setError(error.response?.data.message);
       }
     }
-    
+  };
 
-  }
   return (
     <div className="flex justify-center items-center h-screen">
        <form onSubmit={handleSubmit} className="bg-gray-400 p-4 rounded-lg shadow-md">
@@ -49,7 +57,8 @@ function RegisterPage() {
            className="bg-zinc-800 px-4 py-2 block mb-2 rounded-md"/>
         <input 
            type="password" 
-           placeholder="Password" name="password" 
+           placeholder="Password" 
+           name="password" 
            className="bg-zinc-800 px-4 py-2 block mb-2 rounded-md"/>
          <div className="flex justify-center"> {/* Contenedor para centrar el botón */}
           <button className="bg-indigo-500 px-4 py-2 rounded-md my-2">
@@ -58,7 +67,7 @@ function RegisterPage() {
         </div>
        </form>
     </div>
-  )
+  );
 }
 
-export default RegisterPage
+export default RegisterPage;
